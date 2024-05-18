@@ -50,8 +50,9 @@ const fetchData = async () => {
 
     const data = response.data;
     if (data.OCRExitCode === 1 && data.ParsedResults && data.ParsedResults.length > 0) {
-      const words = data.ParsedResults[0].TextOverlay.Lines.flatMap(line => line.Words);
-      cropMultipleImages(words);
+      const lines = data.ParsedResults[0].TextOverlay.Lines;
+      console.log(lines);
+      cropMultipleImages(lines);
     } else {
       console.error('No text found or an error occurred.');
     }
@@ -60,7 +61,7 @@ const fetchData = async () => {
   }
 };
 
-const cropMultipleImages = (words) => {
+const cropMultipleImages = (lines) => {
   const imageElement = document.createElement('img');
   imageElement.src = imageUrl.value;
 
@@ -70,8 +71,13 @@ const cropMultipleImages = (words) => {
 
     croppedImages.value = [];
 
-    words.forEach(word => {
-      const { Left: left, Top: top, Width: width, Height: height } = word;
+    lines.forEach(line => {
+      const left = Math.min(...line.Words.map(word => word.Left));
+      const top = Math.min(...line.Words.map(word => word.Top));
+      const right = Math.max(...line.Words.map(word => word.Left + word.Width));
+      const bottom = Math.max(...line.Words.map(word => word.Top + word.Height));
+      const width = right - left;
+      const height = bottom - top;
 
       canvas.width = width;
       canvas.height = height;
@@ -86,7 +92,5 @@ const cropMultipleImages = (words) => {
 </script>
 
 <style scoped>
-
-
-
+/* Добавьте любые необходимые стили */
 </style>
