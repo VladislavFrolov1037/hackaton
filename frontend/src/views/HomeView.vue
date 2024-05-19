@@ -15,7 +15,7 @@
               </template>
               <option value="" selected>Не требуется</option>
             </select>
-            <input type="text" />
+            <input type="text" :value="lines[index].LineText"/>
           </div>
           <img :src="img" :alt="'Cropped Image ' + index" />
         </div>
@@ -35,6 +35,7 @@ import axios from 'axios'
 const file = ref(null)
 const imageUrl = ref(null)
 const croppedImages = ref([])
+const lines = ref([])
 
 const handleFileChange = (event) => {
   const selectedFile = event.target.files[0]
@@ -93,7 +94,8 @@ const fetchData = async () => {
       }
     })
     const data = response.data
-    const lines = data.ParsedResults[0].TextOverlay.Lines
+    lines.value = data.ParsedResults[0].TextOverlay.Lines
+    console.log(lines);
     if (data.OCRExitCode === 1 && data.ParsedResults && data.ParsedResults.length > 0) {
       cropMultipleImages(lines)
     } else {
@@ -113,7 +115,7 @@ const cropMultipleImages = (lines) => {
     const ctx = canvas.getContext('2d')
 
     croppedImages.value = []
-    lines.forEach((line) => {
+    lines.value.forEach((line) => {
       const left = Math.min(...line.Words.map((word) => word.Left))
       const top = Math.min(...line.Words.map((word) => word.Top))
       const right = Math.max(...line.Words.map((word) => word.Left + word.Width))
@@ -128,7 +130,6 @@ const cropMultipleImages = (lines) => {
 
       const croppedImageUrl = canvas.toDataURL()
       croppedImages.value.push(croppedImageUrl)
-      console.log(croppedImages)
     })
   }
 }
